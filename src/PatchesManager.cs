@@ -1,87 +1,80 @@
+using System;
+using System.IO;
 using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Newtonsoft.Json;
 using SilksongDoorstop.Patches;
 
 namespace SilksongDoorstop;
 
 internal class PatchesManager
 {
+    [Serializable]
     internal class Settings
     {
+        [Serializable]
         internal struct SettingData
         {
-            public bool activated;
-            public string message;
+            public bool Activated;
+            [NonSerialized]
+            public string Message;
         }
 
-        internal Dictionary<string, SettingData> data = new();
+        public SettingData Downdash = new SettingData {
+            Activated = false,
+            Message = "Downdash Mod Activated",
+        };
 
-        internal SettingData Downdash
-        {
-            get
-            {
-                return data.GetValueOrDefault("downdash", new SettingData
-                {
-                    activated = false,
-                    message = "Downdash Mod Activated"
-                });
-            }
-            set
-            {
-                if (data.TryGetValue("downdash", out SettingData downdash))
-                {
-                    downdash.activated = value.activated;
-                    downdash.message = value.message;
-                }
-                else
-                {
-                    data.Add("downdash", value);
-                }
-            }
-        }
-
-        internal SettingData CourierFix
-        {
-            get
-            {
-                return data.GetValueOrDefault("courierfix", new SettingData
-                {
-                    activated = false,
-                    message = "Courier Fix Mod Activated"
-                });
-            }
-            set
-            {
-                if (data.TryGetValue("courierfix", out SettingData courierfix))
-                {
-                    courierfix.activated = value.activated;
-                    courierfix.message = value.message;
-                }
-                else
-                {
-                    data.Add("courierfix", value);
-                }
-            }
-        }
+        public SettingData CourierFix = new SettingData {
+            Activated = false,
+            Message = "Courier Fix Mod Activated"
+        };
     };
 
-    private Settings _settings;
+    private Settings _settings = new();
     private List<Patch> _patches;
 
     public PatchesManager(ModuleDefinition _targetModule, ModuleDefinition _sourceModule)
     {
-        _settings = new();
+        string modDir = Path.GetDirectoryName(_sourceModule.FileName);
+        string configPath = Path.Combine(modDir, "DoostopPatchesConfig.json");
+        try 
+        {
+            if (!File.Exists(configPath))
+            {
+                using (StreamWriter file = File.CreateText(configPath))
+                using (JsonWriter writer = new JsonTextWriter(file))
+                {
+                    JsonSerializer serializer = new JsonSerializer
+                    {
+                        Formatting = Formatting.Indented,
+                    };
+                    serializer.Serialize(writer, _settings);
+                }
+            }
+
+            using (StreamReader file = File.OpenText(configPath))
+            using (JsonReader reader = new JsonTextReader(file))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                _settings = serializer.Deserialize<Settings>(reader) ?? new();
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[ERROR]: {e}");
+        }
 
         _patches = new List<Patch> {
             new OnGUIPatch(_targetModule, _sourceModule, _settings),
         };
 
-        if (_settings.Downdash.activated)
+        if (_settings.Downdash.Activated)
         {
             _patches.Add(new DowndashPatch(_targetModule));
         }
-        if (_settings.CourierFix.activated)
+        if (_settings.CourierFix.Activated)
         {
             _patches.Add(new CourierFixPatch(_targetModule, _sourceModule));
         }

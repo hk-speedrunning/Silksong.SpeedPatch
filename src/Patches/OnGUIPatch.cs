@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using UnityEngine;
@@ -14,13 +15,16 @@ internal class OnGUIPatch : CopyPatch
     public OnGUIPatch(ModuleDefinition targetModule, ModuleDefinition sourceModule, PatchesManager.Settings settings)
         : base(targetModule, sourceModule, "GameManager", "OnGUI")
     {
-        foreach (PatchesManager.Settings.SettingData data in settings.data.Values)
+        foreach (FieldInfo field in settings.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
         {
-            if (data.activated)
+            PatchesManager.Settings.SettingData data = (PatchesManager.Settings.SettingData)
+                field.GetValue(settings);
+            if (data.Activated)
             {
-                _warningText += data.message + '\n';
+                _warningText += data.Message + '\n';
             }
         }
+
         _warningText += "Doorstop Patches";
     }
 
