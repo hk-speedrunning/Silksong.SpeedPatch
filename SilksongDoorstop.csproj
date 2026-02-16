@@ -11,6 +11,7 @@
   <ItemGroup>
     <Reference Include="$(SilksongRefs)/Unity*.dll" />
     <Reference Include="$(SilksongRefs)/Assembly-CSharp.dll" />
+    <Reference Include="$(SilksongRefs)/Newtonsoft.Json.dll" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,8 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <OutputFiles Include="$(TargetDir)/SilksongDoorstop*" />
-    <OutputFiles Include="$(TargetDir)/Mono*" />
+    <OutputFiles Include="$(TargetDir)/SilksongDoorstop.dll" />
+    <OutputFiles Include="$(TargetDir)/SilksongDoorstop.pdb" />
+    <OutputFiles Include="$(TargetDir)/Mono.Cecil.dll" />
     <DoorstopFiles Include="doorstop_config/*" />
   </ItemGroup>
 
