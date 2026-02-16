@@ -33,8 +33,34 @@ internal class PatchesManager
                 {
                     downdash.activated = value.activated;
                     downdash.message = value.message;
-                } else {
+                }
+                else
+                {
                     data.Add("downdash", value);
+                }
+            }
+        }
+
+        internal SettingData CourierFix
+        {
+            get
+            {
+                return data.GetValueOrDefault("courierfix", new SettingData
+                {
+                    activated = false,
+                    message = "Courier Fix Mod Activated"
+                });
+            }
+            set
+            {
+                if (data.TryGetValue("courierfix", out SettingData courierfix))
+                {
+                    courierfix.activated = value.activated;
+                    courierfix.message = value.message;
+                }
+                else
+                {
+                    data.Add("courierfix", value);
                 }
             }
         }
@@ -46,9 +72,6 @@ internal class PatchesManager
     public PatchesManager(ModuleDefinition _targetModule, ModuleDefinition _sourceModule)
     {
         _settings = new();
-        // Settings.SettingData downdash = _settings.Downdash;
-        // downdash.activated = true;
-        // _settings.Downdash = downdash;
 
         _patches = new List<Patch> {
             new OnGUIPatch(_targetModule, _sourceModule, _settings),
@@ -57,6 +80,10 @@ internal class PatchesManager
         if (_settings.Downdash.activated)
         {
             _patches.Add(new DowndashPatch(_targetModule));
+        }
+        if (_settings.CourierFix.activated)
+        {
+            _patches.Add(new CourierFixPatch(_targetModule, _sourceModule));
         }
     }
 
