@@ -13,24 +13,9 @@ internal class PatchesManager
     [Serializable]
     internal class Settings
     {
-        [Serializable]
-        internal struct SettingData
-        {
-            public bool Activated;
-            [NonSerialized]
-            public string Message;
-        }
-
-        public SettingData Downdash = new SettingData {
-            Activated = false,
-            Message = "Downdash Mod Activated",
-        };
-
-        public SettingData CourierFix = new SettingData {
-            Activated = false,
-            Message = "Courier Fix Mod Activated"
-        };
-    };
+        public bool Downdash = false;
+        public bool CourierFix = false;
+    }
 
     private Settings _settings = new();
     private List<Patch> _patches;
@@ -58,7 +43,7 @@ internal class PatchesManager
             using (JsonReader reader = new JsonTextReader(file))
             {
                 JsonSerializer serializer = new JsonSerializer();
-                _settings = serializer.Deserialize<Settings>(reader) ?? new();
+                serializer.Populate(reader, _settings);
             }
         }
         catch (Exception e)
@@ -70,11 +55,11 @@ internal class PatchesManager
             new OnGUIPatch(_targetModule, _sourceModule, _settings),
         };
 
-        if (_settings.Downdash.Activated)
+        if (_settings.Downdash)
         {
             _patches.Add(new DowndashPatch(_targetModule));
         }
-        if (_settings.CourierFix.Activated)
+        if (_settings.CourierFix)
         {
             _patches.Add(new CourierFixPatch(_targetModule, _sourceModule));
         }

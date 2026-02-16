@@ -15,13 +15,21 @@ internal class OnGUIPatch : CopyPatch
     public OnGUIPatch(ModuleDefinition targetModule, ModuleDefinition sourceModule, PatchesManager.Settings settings)
         : base(targetModule, sourceModule, "GameManager", "OnGUI")
     {
-        foreach (FieldInfo field in settings.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
+        foreach (FieldInfo field in settings.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public))
         {
-            PatchesManager.Settings.SettingData data = (PatchesManager.Settings.SettingData)
-                field.GetValue(settings);
-            if (data.Activated)
+            bool activated = (bool)field.GetValue(settings);
+            if (activated)
             {
-                _warningText += data.Message + '\n';
+                switch (field.Name)
+                {
+                    case "Downdash":
+                        _warningText += "Downdash Patch Activated";
+                        break;
+                    case "CourierFix":
+                        _warningText += "CourierFix Patch Activated";
+                        break;
+                }
+                _warningText += '\n';
             }
         }
 
