@@ -70,7 +70,7 @@
     <Unzip SkipUnchangedFiles="true" SourceFiles="$(LinuxDownload)/doorstop.zip" DestinationFolder="$(LinuxDownload)" />
         <Copy SkipUnchangedFiles="true" SourceFiles="@(LinuxDoorstopFiles)" DestinationFolder="$(LinuxOutput)" />
 
-    <Copy SourceFiles="@(DoorstopLinux)" DestinationFolder="$(LinuxOutput)" />
+    <Copy SourceFiles="@(DoorstopLinux)" DestinationFiles="$(LinuxOutput)/run.sh" />
     <Copy SourceFiles="@(SteamAppId)" DestinationFolder="$(LinuxOutput)" />
     <Copy SourceFiles="@(OutputFiles)" DestinationFolder="$(LinuxOutput)/doorstop_mods" />
 
@@ -84,7 +84,7 @@
     <Unzip SkipUnchangedFiles="true" SourceFiles="$(MacOsDownload)/doorstop.zip" DestinationFolder="$(MacOsDownload)" />
     <Copy SkipUnchangedFiles="true" SourceFiles="@(MacOsDoorstopFiles)" DestinationFolder="$(MacOsOutput)" />
 
-    <Copy SourceFiles="@(DoorstopMacOs)" DestinationFolder="$(MacOsOutput)" />
+    <Copy SourceFiles="@(DoorstopMacOs)" DestinationFiles="$(MacOsOutput)/run.sh" />
     <Copy SourceFiles="@(SteamAppId)" DestinationFolder="$(MacOsOutput)" />
     <Copy SourceFiles="@(OutputFiles)" DestinationFolder="$(MacOsOutput)/doorstop_mods" />
 
