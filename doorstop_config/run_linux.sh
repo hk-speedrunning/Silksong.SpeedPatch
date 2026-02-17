@@ -24,18 +24,12 @@ enabled="1"
 # NOTE: The entrypoint must be of format `static void Doorstop.Entrypoint.Start()`
 target_assembly="doorstop_mods/SilksongDoorstop.dll"
 
-redirect_output_log=true
-output_log_path=doorstop_log.txt
-
-redirect_stdout=true
-redirect_stderr=true
-
 # Overrides the default boot.config file path
 boot_config_override=
 
 # If enabled, DOORSTOP_DISABLE env var value is ignored
 # USE THIS ONLY WHEN ASKED TO OR YOU KNOW WHAT THIS MEANS
-ignore_disable_switch="1"
+ignore_disable_switch="0"
 
 # Mono Options
 
