@@ -22,6 +22,9 @@
     <OutputFiles Include="$(TargetDir)/SilksongDoorstop.dll" />
     <OutputFiles Include="$(TargetDir)/SilksongDoorstop.pdb" />
     <OutputFiles Include="$(TargetDir)/Mono.Cecil.dll" />
+
+    <SteamAppId Include="steam_appid.txt" />
+
     <DoorstopWindows Include="doorstop_config/doorstop_config.ini" />
     <DoorstopLinux Include="doorstop_config/run_linux.sh" />
     <DoorstopMacOs Include="doorstop_config/run_macos.sh" />
@@ -54,6 +57,7 @@
     <Copy SkipUnchangedFiles="true" SourceFiles="@(WindowsDoorstopFiles)" DestinationFolder="$(WindowsOutput)" />
 
     <Copy SourceFiles="@(DoorstopWindows)" DestinationFolder="$(WindowsOutput)" />
+    <Copy SourceFiles="@(SteamAppId)" DestinationFolder="$(WindowsOutput)" />
     <Copy SourceFiles="@(OutputFiles)" DestinationFolder="$(WindowsOutput)/doorstop_mods" />
 
     <Delete Condition="Exists('WindowsOutput.zip')" Files="WindowsOutput.zip"/>
@@ -64,9 +68,10 @@
     <RemoveDir Condition="Exists('$(LinuxOutput)')" Directories="$(LinuxOutput)" />
     <DownloadFile DestinationFolder="$(LinuxDownload)" DestinationFileName="doorstop.zip" SourceUrl="https://github.com/NeighTools/UnityDoorstop/releases/download/v4.5.0/doorstop_linux_release_4.5.0.zip" />
     <Unzip SkipUnchangedFiles="true" SourceFiles="$(LinuxDownload)/doorstop.zip" DestinationFolder="$(LinuxDownload)" />
-    <Copy SkipUnchangedFiles="true" SourceFiles="@(LinuxDoorstopFiles)" DestinationFolder="$(LinuxOutput)" />
+        <Copy SkipUnchangedFiles="true" SourceFiles="@(LinuxDoorstopFiles)" DestinationFolder="$(LinuxOutput)" />
 
     <Copy SourceFiles="@(DoorstopLinux)" DestinationFolder="$(LinuxOutput)" />
+    <Copy SourceFiles="@(SteamAppId)" DestinationFolder="$(LinuxOutput)" />
     <Copy SourceFiles="@(OutputFiles)" DestinationFolder="$(LinuxOutput)/doorstop_mods" />
 
     <Delete Condition="Exists('LinuxOutput.zip')" Files="LinuxOutput.zip"/>
@@ -80,6 +85,7 @@
     <Copy SkipUnchangedFiles="true" SourceFiles="@(MacOsDoorstopFiles)" DestinationFolder="$(MacOsOutput)" />
 
     <Copy SourceFiles="@(DoorstopMacOs)" DestinationFolder="$(MacOsOutput)" />
+    <Copy SourceFiles="@(SteamAppId)" DestinationFolder="$(MacOsOutput)" />
     <Copy SourceFiles="@(OutputFiles)" DestinationFolder="$(MacOsOutput)/doorstop_mods" />
 
     <Delete Condition="Exists('MacOsOutput.zip')" Files="MacOsOutput.zip"/>
