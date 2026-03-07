@@ -5,6 +5,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using SilksongDoorstop;
 
+// ReSharper disable once CheckNamespace
 namespace Doorstop;
 
 public static class Entrypoint

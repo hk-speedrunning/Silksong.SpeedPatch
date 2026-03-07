@@ -4,3 +4,7 @@
 /Output
 /Download
 *.zip
+.idea/
+
+SilksongPath.props
+*.DotSettings.user

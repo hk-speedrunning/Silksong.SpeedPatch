@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Newtonsoft.Json;
@@ -13,17 +15,21 @@ internal class PatchesManager
     [Serializable]
     internal class Settings
     {
-        public bool Downdash = false;
-        public bool CourierFix = false;
+        public bool DowndashTransitionFix = false;
+        public bool CourierRNGFix = false;
     }
 
     private Settings _settings = new();
     private List<Patch> _patches;
+    internal static string Version;
 
     public PatchesManager(ModuleDefinition _targetModule, ModuleDefinition _sourceModule)
     {
+        Version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            .InformationalVersion.Split('+')[0];
+        
         string modDir = Path.GetDirectoryName(_sourceModule.FileName);
-        string configPath = Path.Combine(modDir, "DoostopPatchesConfig.json");
+        string configPath = Path.Combine(modDir, "hksr_patches.json");
         try 
         {
             if (!File.Exists(configPath))
@@ -55,11 +61,11 @@ internal class PatchesManager
             new OnGUIPatch(_targetModule, _sourceModule, _settings),
         };
 
-        if (_settings.Downdash)
+        if (_settings.DowndashTransitionFix)
         {
             _patches.Add(new DowndashPatch(_targetModule));
         }
-        if (_settings.CourierFix)
+        if (_settings.CourierRNGFix)
         {
             _patches.Add(new CourierFixPatch(_targetModule, _sourceModule));
         }

@@ -1,0 +1,72 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Condition="Exists('SilksongPath.props')" Project="SilksongPath.props" />
+  
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>10</LangVersion>
+    <Nullable>enable</Nullable>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    
+    <AssemblyName>HKSR.Speedpatches</AssemblyName>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <VersionSuffix Condition="'$(Configuration)'=='DEBUG'">beta</VersionSuffix>
+    <RootNamespace>SilksongDoorstop</RootNamespace>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Mono.Cecil" Version="0.11.6" />
+    <PackageReference Include="UnityEngine.Modules" Version="6000.0.50" IncludeAssets="compile" />
+    <PackageReference Include="Silksong.GameLibs" Version="*-*" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <OutputFiles Include="$(TargetDir)/Mono.Cecil.dll" />
+    <OutputFiles Include="$(TargetPath)" LocalDir="/" PackDir="/" />
+    <OutputFiles Include="$(TargetDir)/$(TargetName).pdb" LocalDir="/" PackDir="/" />
+
+    <DoorstopUniversal Include="doorstop_config/run_hksr.sh" />
+    <DoorstopUniversal Include="doorstop_config/doorstop_config.ini" />
+    <DoorstopUniversal Include="doorstop_config/steam_appid.txt" />
+  </ItemGroup>
+  
+  <Target Name="GenerateUniversalOutput" AfterTargets="PostBuildEvent">
+    <RemoveDir Directories="$(IntermediateOutputPath)/archive" />
+    <PropertyGroup>
+      <DoorstopVersion>4.5.0</DoorstopVersion>
+      <DoorstopUrl>https://github.com/NeighTools/UnityDoorstop/releases/download/v$(DoorstopVersion)/doorstop_all_$(DoorstopVersion).zip/</DoorstopUrl>
+      <UniversalOutput>$(IntermediateOutputPath)/universal_output</UniversalOutput>
+    </PropertyGroup>
+    
+    <!-- Download Doorstop if it does not exist -->
+    <DownloadFile
+            Condition="!Exists('$(IntermediateOutputPath)/Doorstop.$(DoorstopVersion).zip')"
+            SourceUrl="$(DoorstopUrl)"
+            DestinationFolder="$(IntermediateOutputPath)" 
+            DestinationFileName="Doorstop.$(DoorstopVersion).zip"
+    />
+    <Unzip SkipUnchangedFiles="true" SourceFiles="$(IntermediateOutputPath)/Doorstop.$(DoorstopVersion).zip" DestinationFolder="$(IntermediateOutputPath)/archive/Doorstop_all" />
+    
+    <RemoveDir Directories="$(UniversalOutput)" />
+    <MakeDir Directories="$(UniversalOutput)" />
+    
+    <!-- Combine OS-specific Doorstop versions into output -->
+    <Copy SourceFiles="$(IntermediateOutputPath)/archive/Doorstop_all/doorstop_linux_release/x64/.doorstop_version" DestinationFolder="$(UniversalOutput)" />
+    <Copy SourceFiles="$(IntermediateOutputPath)/archive/Doorstop_all/doorstop_linux_release/x64/libdoorstop.so" DestinationFolder="$(UniversalOutput)" />
+    
+    <Copy SourceFiles="$(IntermediateOutputPath)/archive/Doorstop_all/doorstop_macos_release/universal/libdoorstop.dylib" DestinationFolder="$(UniversalOutput)" />
+    
+    <Copy SourceFiles="$(IntermediateOutputPath)/archive/Doorstop_all/doorstop_win_release/x64/winhttp.dll" DestinationFolder="$(UniversalOutput)" />
+    
+    <!-- Add build artifacts -->
+    <Copy SourceFiles="@(DoorstopUniversal)" DestinationFolder="$(UniversalOutput)" />
+    <Copy SourceFiles="@(OutputFiles)" DestinationFolder="$(UniversalOutput)/hksr_patches" />
+    
+    <Delete Files="Output.zip" />
+    <ZipDirectory SourceDirectory="$(UniversalOutput)" DestinationFile="Output.zip" />
+    
+    <!-- Iff SilksongPath is defined, extract output to folder for testing -->
+    <Unzip Condition="'$(SilksongFolder)' != '' And Exists('$(SilksongFolder)')"
+           SourceFiles="Output.zip" DestinationFolder="$(SilksongFolder)" />
+  </Target>
+</Project>

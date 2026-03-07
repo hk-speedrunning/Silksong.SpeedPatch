@@ -1,16 +1,25 @@
 #!/bin/sh
-# Doorstop start script
+# BepInEx start script
 #
-# Run the script to start the game with Doorstop enabled
+# Run the script to start the game with BepInEx enabled
 #
 # There are two ways to use this script
 #
-# 1. Via CLI: Run ./run.sh <path to game> [doorstop arguments] [game arguments]
+# 1. Via CLI: Run ./run_bepinex.sh <path to game> [doorstop arguments] [game arguments]
 # 2. Via config: edit the options below and run ./run.sh without any arguments
 
 # LINUX: name of Unity executable
 # MACOS: name of the .app directory
-executable_name="Hollow Knight Silksong"
+os_type="$(uname -s)"
+executable_name=""
+case ${os_type} in
+	Linux*)
+		executable_name="Hollow Knight Silksong"
+	;;
+	Darwin*)
+		executable_name="Hollow Knight Silksong.app"
+	;;
+esac
 
 # All of the below can be overriden with command line args
 
@@ -22,7 +31,7 @@ enabled="1"
 
 # Path to the assembly to load and execute
 # NOTE: The entrypoint must be of format `static void Doorstop.Entrypoint.Start()`
-target_assembly="doorstop_mods/SilksongDoorstop.dll"
+target_assembly="hksr_patches/HKSR.Speedpatches.dll"
 
 # Overrides the default boot.config file path
 boot_config_override=
@@ -39,7 +48,7 @@ ignore_disable_switch="0"
 # This option causes Mono to seek mscorlib and core libraries from a different folder before Managed
 # Original Managed folder is added as a secondary folder in the search path
 # To specify multiple paths, separate them with colons (:)
-dll_search_path_override="doorstop_mods/"
+dll_search_path_override="hksr_patches/"
 
 # If 1, Mono debugger server will be enabled
 debug_enable="0"
@@ -60,17 +69,25 @@ corlib_dir=""
 
 ################################################################################
 # Everything past this point is the actual script
-set -e
 
-# Special case: program is launched via Steam on Linux
-# In that case rerun the script via their bootstrapper to delay adding Doorstop to LD_PRELOAD
-# This is required until https://github.com/NeighTools/UnityDoorstop/issues/88 is resolved
+# Special case: program is launched via Steam
+# In that case rerun the script via their bootstrapper to ensure Steam overlay works
+steam_arg_helper() {
+    if [ "$executable_name" != "" ] && [ "$1" != "${1%"$executable_name"}" ]; then
+        return 0
+    elif [ "$executable_name" = "" ] && [ "$1" != "${1%.x86_64}" ]; then
+        return 0
+    elif [ "$executable_name" = "" ] && [ "$1" != "${1%.x86}" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
 for a in "$@"; do
     if [ "$a" = "SteamLaunch" ]; then
         rotated=0; max=$#
         while [ $rotated -lt $max ]; do
-            # Test if argument is prefixed with the value of $PWD
-            if [ "$1" != "${1#"${PWD%/}/"}" ]; then
+            if steam_arg_helper "$1"; then
                 to_rotate=$(($# - rotated))
                 set -- "$@" "$0"
                 while [ $((to_rotate-=1)) -ge 0 ]; do
@@ -84,7 +101,7 @@ for a in "$@"; do
                 rotated=$((rotated+1))
             fi
         done
-        echo "Could not determine game executable launched by Steam" 1>&2
+        echo "Please set executable_name to a valid name in a text editor" 1>&2
         exit 1
     fi
 done
@@ -115,8 +132,7 @@ abs_path() {
     echo "$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
 }
 
-# Set executable path and the extension to use for the libdoorstop shared object as well as check whether we're running on Apple Silicon
-os_type="$(uname -s)"
+# Set executable path and the extension to use for the libdoorstop shared object
 case ${os_type} in
     Linux*)
         executable_path="$(abs_path "$executable_name")"
@@ -140,14 +156,6 @@ case ${os_type} in
             ;;
         esac
         lib_extension="dylib"
-
-        # CPUs for Apple Silicon are in the format "Apple M.."
-        cpu_type="$(sysctl -n machdep.cpu.brand_string)"
-        case "${cpu_type}" in
-            Apple*)
-                is_apple_silicon=1
-            ;;
-        esac
     ;;
     *)
         # alright whos running games on freebsd
@@ -183,17 +191,6 @@ executable_path=$(resolve_executable_path "${executable_path}")
 # Figure out the arch of the executable with file
 file_out="$(LD_PRELOAD="" file -b "${executable_path}")"
 case "${file_out}" in
-    *PE32*)
-        echo "The executable is a Windows executable file. You must use Wine/Proton and BepInEx for Windows with this executable." 1>&2
-        echo "Uninstall BepInEx for *nix and install BepInEx for Windows instead." 1>&2
-        echo "More info: https://docs.bepinex.dev/articles/advanced/steam_interop.html#protonwine" 1>&2
-        exit 1
-    ;;
-    *shell\ script*)
-        # Fallback for games that launch a shell script from Steam
-        # default to x64, change as needed
-        arch="x64"
-    ;;
     *64-bit*)
         arch="x64"
     ;;
@@ -320,14 +317,4 @@ else
     export DYLD_INSERT_LIBRARIES="${doorstop_name}:${DYLD_INSERT_LIBRARIES}"
 fi
 
-if [ -n "${is_apple_silicon}" ]; then
-    export ARCHPREFERENCE="arm64,x86_64"
-
-    # We need to use arch for Apple Silicon to allow the executable to be run natively as otherwise if
-    # the executable is universal, supporting both x86_64 and arm64, MacOs will still run it as x86_64
-    # if the parent process is running as x86.
-    # arch also strips the DYLD_INSERT_LIBRARIES env var so we have to pass that in manually
-    exec arch -e DYLD_INSERT_LIBRARIES="${DYLD_INSERT_LIBRARIES}" "$executable_path" "$@"
-else
-    exec "$executable_path" "$@"
-fi
+exec "$executable_path" "$@"

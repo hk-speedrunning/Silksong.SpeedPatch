@@ -15,6 +15,8 @@ internal class OnGUIPatch : CopyPatch
     public OnGUIPatch(ModuleDefinition targetModule, ModuleDefinition sourceModule, PatchesManager.Settings settings)
         : base(targetModule, sourceModule, "GameManager", "OnGUI")
     {
+        _warningText = $"SpeedPatch v{PatchesManager.Version!}\n";
+        
         foreach (FieldInfo field in settings.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public))
         {
             bool activated = (bool)field.GetValue(settings);
@@ -22,18 +24,16 @@ internal class OnGUIPatch : CopyPatch
             {
                 switch (field.Name)
                 {
-                    case "Downdash":
-                        _warningText += "Downdash Patch Activated";
+                    case "DowndashTransitionFix":
+                        _warningText += "DowndashTransitionFix";
                         break;
-                    case "CourierFix":
-                        _warningText += "CourierFix Patch Activated";
+                    case "CourierRNGFix":
+                        _warningText += "CourierRNGFix";
                         break;
                 }
                 _warningText += '\n';
             }
         }
-
-        _warningText += "Doorstop Patches";
     }
 
     override public void ApplyPatch()
@@ -79,7 +79,7 @@ internal class GameManager : global::GameManager
                 WarningText,
                 new GUIStyle
                 {
-                    fontSize = 30,
+                    fontSize = 24,
                     normal = new GUIStyleState
                     {
                         textColor = Color.white,
