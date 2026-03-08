@@ -14,6 +14,13 @@ public static class Entrypoint
     {
         string baseDir = AppDomain.CurrentDomain.BaseDirectory;
         string dataDir = Directory.GetDirectories(baseDir, "*_Data").FirstOrDefault();
+
+        // Check for MacOS directory structure
+        // that is different from Windows and Linux
+        if (String.IsNullOrEmpty(dataDir)) {
+            string contentsDir = Path.GetDirectoryName(baseDir);
+            dataDir = Path.Combine(contentsDir, "Resources", "Data");
+        }
         string managedDir = Path.Combine(baseDir, dataDir, "Managed");
         string asmPath = Path.Combine(managedDir, "Assembly-CSharp.dll");
 
