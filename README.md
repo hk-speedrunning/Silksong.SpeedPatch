@@ -19,6 +19,6 @@ Please note that this patch interferes with BepInEx installations, even when not
 - To run:
     - Windows (& Linux via Proton): Open the game normally.
     - Linux (native) & MacOS: Run the `run_hksr.sh` script.
-- To configure, first run the game once tp generate the configuration file.
+- To configure, first run the game once to generate the configuration file.
 - Edit `hksr_patches/hksr_patches.json` & change `false` to `true` for each patch you wish to enable. Save this file then relaunch.
 - Check the patches you expect are listed in the top left below the version text!
