@@ -6,13 +6,13 @@ using SilksongDoorstop;
 
 namespace SilksongDoorstop.Patches;
 
-internal class VersionPatch : Patch
+internal class PatchNumberPatch: Patch
 {
     private ModuleDefinition _targetModule;
 
     protected MethodDefinition _targetMethod;
 
-    public VersionPatch(ModuleDefinition targetModule)
+    public PatchNumberPatch(ModuleDefinition targetModule)
     {
         _targetModule = targetModule;
         TypeDefinition targetType = _targetModule.GetType("SetVersionNumber");

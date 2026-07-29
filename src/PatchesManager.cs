@@ -59,7 +59,7 @@ internal class PatchesManager
 
         _patches = new List<Patch> {
             new OnGUIPatch(_targetModule, _sourceModule, _settings),
-            new VersionPatch(_targetMainModule),
+            new PatchNumberPatch(_targetModule),
         };
 
         if (_settings.DowndashTransitionFix)
