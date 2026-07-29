@@ -17,6 +17,7 @@ internal class PatchesManager
     {
         public bool DowndashTransitionFix = false;
         public bool CourierRNGFix = false;
+        public bool FasterIntroSkip = false;
     }
 
     private Settings _settings = new();
@@ -68,6 +69,10 @@ internal class PatchesManager
         if (_settings.CourierRNGFix)
         {
             _patches.Add(new CourierFixPatch(_targetModule, _sourceModule));
+        }
+        if(_settings.FasterIntroSkip)
+        {
+            _patches.Add(new FasterIntroSkipPatch(_targetModule));
         }
     }
 
