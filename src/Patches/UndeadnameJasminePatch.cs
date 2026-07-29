@@ -52,13 +52,12 @@ internal class UndeadnameJasminePatch : Patch
             il.InsertAfter(i++, il.Create(OpCodes.Ldloc_0));
             il.InsertAfter(i++, il.Create(OpCodes.Ldstr, "Jack Vine"));
 
-            TypeReference stringTypeRef = new TypeReference("System", "String", _targetModule, _targetModule.TypeSystem.CoreLibrary);
-            MethodReference opEqualityRef = new MethodReference("op_Equality", _targetModule.TypeSystem.Boolean, stringTypeRef){
+            MethodReference opEqualityRef = new MethodReference("op_Equality", _targetModule.TypeSystem.Boolean, _targetModule.TypeSystem.String){
                 HasThis = false,
                 CallingConvention = MethodCallingConvention.Default
             };
-            opEqualityRef.Parameters.Add(new ParameterDefinition(stringTypeRef));
-            opEqualityRef.Parameters.Add(new ParameterDefinition(stringTypeRef));
+            opEqualityRef.Parameters.Add(new ParameterDefinition(_targetModule.TypeSystem.String));
+            opEqualityRef.Parameters.Add(new ParameterDefinition(_targetModule.TypeSystem.String));
 
             il.InsertAfter(i++, il.Create(OpCodes.Call, _targetModule.ImportReference(opEqualityRef)));
 
