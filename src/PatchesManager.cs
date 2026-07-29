@@ -23,7 +23,7 @@ internal class PatchesManager
     private List<Patch> _patches;
     internal static string Version;
 
-    public PatchesManager(ModuleDefinition _targetModule, ModuleDefinition _sourceModule)
+    public PatchesManager(ModuleDefinition _targetMainModule, ModuleDefinition _targetLocalizationModule, ModuleDefinition _sourceModule)
     {
         Version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()
             .InformationalVersion.Split('+')[0];
@@ -58,16 +58,17 @@ internal class PatchesManager
         }
 
         _patches = new List<Patch> {
-            new OnGUIPatch(_targetModule, _sourceModule, _settings),
+            new OnGUIPatch(_targetMainModule, _sourceModule, _settings),
+            new UndeadnameJasminePatch(_targetLocalizationModule),
         };
 
         if (_settings.DowndashTransitionFix)
         {
-            _patches.Add(new DowndashPatch(_targetModule));
+            _patches.Add(new DowndashPatch(_targetMainModule));
         }
         if (_settings.CourierRNGFix)
         {
-            _patches.Add(new CourierFixPatch(_targetModule, _sourceModule));
+            _patches.Add(new CourierFixPatch(_targetMainModule, _sourceModule));
         }
     }
 
