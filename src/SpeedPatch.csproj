@@ -25,9 +25,9 @@
     <OutputFiles Include="$(TargetPath)" LocalDir="/" PackDir="/" />
     <OutputFiles Include="$(TargetDir)/$(TargetName).pdb" LocalDir="/" PackDir="/" />
 
-    <DoorstopUniversal Include="doorstop_config/run_hksr.sh" />
-    <DoorstopUniversal Include="doorstop_config/doorstop_config.ini" />
-    <DoorstopUniversal Include="doorstop_config/steam_appid.txt" />
+    <DoorstopUniversal Include="$(SolutionDir)/doorstop_config/run_hksr.sh" />
+    <DoorstopUniversal Include="$(SolutionDir)/doorstop_config/doorstop_config.ini" />
+    <DoorstopUniversal Include="$(SolutionDir)/doorstop_config/steam_appid.txt" />
   </ItemGroup>
   
   <Target Name="GenerateUniversalOutput" AfterTargets="PostBuildEvent">
@@ -36,6 +36,7 @@
       <DoorstopVersion>4.5.0</DoorstopVersion>
       <DoorstopUrl>https://github.com/NeighTools/UnityDoorstop/releases/download/v$(DoorstopVersion)/doorstop_all_$(DoorstopVersion).zip/</DoorstopUrl>
       <UniversalOutput>$(IntermediateOutputPath)/universal_output</UniversalOutput>
+      <OutputZip>$(SolutionDir)/Output.zip</OutputZip>
     </PropertyGroup>
     
     <!-- Download Doorstop if it does not exist -->
@@ -62,11 +63,11 @@
     <Copy SourceFiles="@(DoorstopUniversal)" DestinationFolder="$(UniversalOutput)" />
     <Copy SourceFiles="@(OutputFiles)" DestinationFolder="$(UniversalOutput)/hksr_patches" />
     
-    <Delete Files="Output.zip" />
-    <ZipDirectory SourceDirectory="$(UniversalOutput)" DestinationFile="Output.zip" />
+    <Delete Files="$(OutputZip)" />
+    <ZipDirectory SourceDirectory="$(UniversalOutput)" DestinationFile="$(OutputZip)" />
     
     <!-- Iff SilksongPath is defined, extract output to folder for testing -->
     <Unzip Condition="'$(SilksongFolder)' != '' And Exists('$(SilksongFolder)')"
-           SourceFiles="Output.zip" DestinationFolder="$(SilksongFolder)" />
+           SourceFiles="$(OutputZip)" DestinationFolder="$(SilksongFolder)" />
   </Target>
 </Project>

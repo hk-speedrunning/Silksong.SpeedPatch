@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpeedPatch", "SpeedPatch.csproj", "{2946A227-CC9C-435C-B488-55DD425A9A10}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpeedPatch", "src/SpeedPatch.csproj", "{2946A227-CC9C-435C-B488-55DD425A9A10}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
