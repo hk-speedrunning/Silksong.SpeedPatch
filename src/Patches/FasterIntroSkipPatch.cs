@@ -46,9 +46,8 @@ internal class FasterIntroSkipPatch : Patch
             bool nextCorrectStart = next.OpCode == OpCodes.Callvirt 
                 && ((MemberReference)next.Operand).FullName == "System.Boolean ChainSequence::get_IsCurrentSkipped()";
 
-            bool prevCorrectEnd = prev.OpCode == OpCodes.Ldloc_3;
-            bool currCorrectEnd = curr.OpCode == OpCodes.Callvirt 
-                && ((MethodReference)curr.Operand).FullName == "System.Void InputHandler::SetSkipMode(GlobalEnums.SkipPromptMode)";
+            bool prevCorrectEnd = prev.OpCode == OpCodes.Ldc_I4_0;
+            bool currCorrectEnd = curr.OpCode == OpCodes.Stloc_3; 
             bool nextCorrectEnd = next.OpCode == OpCodes.Ldarg_0;
 
 
@@ -64,13 +63,6 @@ internal class FasterIntroSkipPatch : Patch
             il.RemoveAt(startIdx);
         }
 
-        TypeDefinition gameManagerType = _targetModule.GetType("GameManager");
-        MethodDefinition getInstance = gameManagerType.Methods.First(method => method.Name == "get_instance");
-        MethodDefinition getInputHandler = gameManagerType.Methods.First(method => method.Name == "get_inputHandler");
-
-        TypeDefinition inputHandlerType = _targetModule.GetType("InputHandler");
-        MethodDefinition setSkipMode = inputHandlerType.Methods.First(method => method.Name == "SetSkipMode");
-
         TypeDefinition skipPromptModeEnumType = _targetModule.GetType("GlobalEnums.SkipPromptMode");
 
         int enumVal = 0;
@@ -83,10 +75,8 @@ internal class FasterIntroSkipPatch : Patch
             }
         }
 
-        int inserIdx = startIdx;
-        il.InsertBefore(il.Body.Instructions[inserIdx], il.Create(OpCodes.Call, getInstance));
-        il.InsertAfter(inserIdx++, il.Create(OpCodes.Callvirt, getInputHandler));
-        il.InsertAfter(inserIdx++, il.Create(OpCodes.Ldc_I4, enumVal));
-        il.InsertAfter(inserIdx++, il.Create(OpCodes.Callvirt, setSkipMode));
+        Instruction insertBefore = il.Body.Instructions[startIdx];
+        il.InsertBefore(insertBefore, il.Create(OpCodes.Ldc_I4, enumVal));
+        il.InsertBefore(insertBefore, il.Create(OpCodes.Stloc_3));
     }
 }
