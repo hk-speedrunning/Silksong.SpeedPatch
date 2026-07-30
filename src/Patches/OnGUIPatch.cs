@@ -31,7 +31,7 @@ internal class OnGUIPatch : CopyPatch
                         _warningText += "CourierRNGFix";
                         break;
                     case "FasterIntroSkip":
-                        _warningText += "FasterIntroSkipPatch";
+                        _warningText += "FasterIntroSkipUpdatePatch";
                         break;
                 }
                 _warningText += '\n';
