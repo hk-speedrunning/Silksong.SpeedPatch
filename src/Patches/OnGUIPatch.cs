@@ -30,6 +30,9 @@ internal class OnGUIPatch : CopyPatch
                     case "CourierRNGFix":
                         _warningText += "CourierRNGFix";
                         break;
+                    case "TextMasher":
+                        _warningText += "TextMasherPatch";
+                        break;
                 }
                 _warningText += '\n';
             }
