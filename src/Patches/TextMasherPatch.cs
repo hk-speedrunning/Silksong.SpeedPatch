@@ -68,6 +68,10 @@ internal class TextMasherPatch : Patch
         Instruction ld_this = il.Create(OpCodes.Ldloc_1);
 
         il.InsertBefore(old_branch_target, ld_this);
+        il.InsertAfter(i++, il.Create(OpCodes.Callvirt, _isActiveMethod));
+        il.InsertAfter(i++, il.Create(OpCodes.Brfalse_S, old_branch_target));
+
+        il.InsertAfter(i++, il.Create(OpCodes.Ldloc_1));
         il.InsertAfter(i++, il.Create(OpCodes.Ldstr, "AdvanceConversation"));
         il.InsertAfter(i++, il.Create(OpCodes.Ldc_R4, 0f));
         il.InsertAfter(i++, il.Create(OpCodes.Callvirt, _invoke));
