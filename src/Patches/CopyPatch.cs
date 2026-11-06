@@ -7,67 +7,65 @@ namespace SilksongDoorstop.Patches;
 
 internal abstract class CopyPatch : Patch
 {
-    protected ModuleDefinition _targetModule;
-    protected ModuleDefinition _sourceModule;
+    protected readonly ModuleDefinition TargetModule;
 
-    protected MethodDefinition _targetMethod;
-    protected MethodDefinition _sourceMethod;
+    protected readonly MethodDefinition TargetMethod;
+    protected readonly MethodDefinition SourceMethod;
 
-    public CopyPatch(ModuleDefinition targetModule, ModuleDefinition sourceModule, string typeName, string methodName)
+    protected CopyPatch(ModuleDefinition targetModule, ModuleDefinition sourceModule, string typeName, string methodName)
     {
-        _sourceModule = sourceModule;
-        TypeDefinition sourceType = _sourceModule.GetType($"SilksongDoorstop.Patches.{typeName}");
-        _sourceMethod = sourceType.Methods.First(method => method.Name == methodName);
+        TypeDefinition sourceType = sourceModule.GetType($"SilksongDoorstop.Patches.{typeName}");
+        SourceMethod = sourceType.Methods.First(method => method.Name == methodName);
 
-        _targetModule = targetModule;
-        TypeDefinition targetType = _targetModule.GetType(typeName);
+        TargetModule = targetModule;
+        TypeDefinition targetType = TargetModule.GetType(typeName);
         try
         {
-            _targetMethod = targetType.Methods.First(method =>
+            TargetMethod = targetType.Methods.First(method =>
                 method.Name == methodName &&
-                method.Parameters.Count == _sourceMethod.Parameters.Count &&
-                method.Parameters.SequenceEqual(_sourceMethod.Parameters)
+                method.Parameters.Count == SourceMethod.Parameters.Count &&
+                method.Parameters.SequenceEqual(SourceMethod.Parameters)
             );
         }
         catch (Exception)
         {
-            _targetMethod = new MethodDefinition(methodName, _sourceMethod.Attributes, targetModule.ImportReference(_sourceMethod.ReturnType));
-            targetType.Methods.Add(_targetMethod);
+            TargetMethod = new MethodDefinition(methodName, SourceMethod.Attributes, targetModule.ImportReference(SourceMethod.ReturnType));
+            targetType.Methods.Add(TargetMethod);
         }
     }
 
-    virtual public void ApplyPatch()
+    public virtual void ApplyPatch()
     {
         CopyParameters();
         CopyLocals();
         CopyCode();
     }
 
-    protected void CopyParameters()
+    private void CopyParameters()
     {
-        foreach (ParameterDefinition paramDef in _sourceMethod.Parameters)
+        foreach (ParameterDefinition paramDef in SourceMethod.Parameters)
         {
-            paramDef.ParameterType = _targetModule.ImportReference(paramDef.ParameterType);
-            _targetMethod.Parameters.Add(paramDef);
+            paramDef.ParameterType = TargetModule.ImportReference(paramDef.ParameterType);
+            TargetMethod.Parameters.Add(paramDef);
         }
     }
 
     protected void CopyLocals()
     {
-        _targetMethod.Body.InitLocals = _sourceMethod.Body.InitLocals;
+        TargetMethod.Body.InitLocals = SourceMethod.Body.InitLocals;
 
-        foreach (VariableDefinition varDef in _sourceMethod.Body.Variables)
+        foreach (VariableDefinition varDef in SourceMethod.Body.Variables)
         {
-            varDef.VariableType = _targetModule.ImportReference(varDef.VariableType);
-            _targetMethod.Body.Variables.Add(varDef);
+            varDef.VariableType = TargetModule.ImportReference(varDef.VariableType);
+            TargetMethod.Body.Variables.Add(varDef);
         }
     }
 
-    protected void CopyCode()
+    private void CopyCode()
     {
-        ILProcessor il = _targetMethod.Body.GetILProcessor();
+        ILProcessor il = TargetMethod.Body.GetILProcessor();
 
-        foreach (Instruction inst in _sourceMethod.Body.Instructions)
+        foreach (Instruction inst in SourceMethod.Body.Instructions)
         {
             Instruction newInst = CheckInstruction(il, inst);
             il.Append(newInst);
@@ -76,9 +74,9 @@ internal abstract class CopyPatch : Patch
 
     protected void InsertCode(int insertIndex, int localsOffset)
     {
-        ILProcessor il = _targetMethod.Body.GetILProcessor();
+        ILProcessor il = TargetMethod.Body.GetILProcessor();
 
-        foreach (Instruction inst in _sourceMethod.Body.Instructions)
+        foreach (Instruction inst in SourceMethod.Body.Instructions)
         {
             Instruction newInst = CheckInstruction(il, inst, true, localsOffset);
 
@@ -90,20 +88,20 @@ internal abstract class CopyPatch : Patch
     {
         if (inst.OpCode.FlowControl == FlowControl.Call)
         {
-            inst.Operand = _targetModule.ImportReference((MethodReference)inst.Operand);
+            inst.Operand = TargetModule.ImportReference((MethodReference)inst.Operand);
         }
         else if (inst.OpCode.OperandType == OperandType.InlineField)
         {
-            inst.Operand = _targetModule.ImportReference((FieldReference)inst.Operand);
+            inst.Operand = TargetModule.ImportReference((FieldReference)inst.Operand);
         }
-        else if (reassignLocals && isLocalOperand(inst.OpCode))
+        else if (reassignLocals && IsLocalOperand(inst.OpCode))
         {
-            VariableDefinition local = getLocal(inst);
+            VariableDefinition local = GetLocal(inst);
 
             int localIndex = 0;
-            for (localIndex = 0; localIndex < _targetMethod.Body.Variables.Count; localIndex++)
+            for (localIndex = 0; localIndex < TargetMethod.Body.Variables.Count; localIndex++)
             {
-                if (_targetMethod.Body.Variables[localIndex] == local)
+                if (TargetMethod.Body.Variables[localIndex] == local)
                 {
                     break;
                 }
@@ -111,7 +109,7 @@ internal abstract class CopyPatch : Patch
 
             localIndex += localsOffset;
 
-            if (localIndex < _targetMethod.Body.Variables.Count)
+            if (localIndex < TargetMethod.Body.Variables.Count)
             {
                 if (inst.OpCode.StackBehaviourPop == StackBehaviour.Pop0)
                 {
@@ -131,7 +129,7 @@ internal abstract class CopyPatch : Patch
         return inst;
     }
 
-    private static bool isLocalOperand(OpCode op)
+    private static bool IsLocalOperand(OpCode op)
     {
         return op.OperandType == OperandType.ShortInlineVar ||
                 op.OperandType == OperandType.InlineVar ||
@@ -148,23 +146,23 @@ internal abstract class CopyPatch : Patch
 
     }
 
-    private VariableDefinition getLocal(Instruction inst)
+    private VariableDefinition GetLocal(Instruction inst)
     {
         if (inst.OpCode == OpCodes.Ldloc_0 || inst.OpCode == OpCodes.Stloc_0)
         {
-            return _targetMethod.Body.Variables[0];
+            return TargetMethod.Body.Variables[0];
         }
         else if (inst.OpCode == OpCodes.Ldloc_1 || inst.OpCode == OpCodes.Stloc_1)
         {
-            return _targetMethod.Body.Variables[1];
+            return TargetMethod.Body.Variables[1];
         }
         else if (inst.OpCode == OpCodes.Ldloc_2 || inst.OpCode == OpCodes.Stloc_2)
         {
-            return _targetMethod.Body.Variables[2];
+            return TargetMethod.Body.Variables[2];
         }
         else if (inst.OpCode == OpCodes.Ldloc_3 || inst.OpCode == OpCodes.Stloc_3)
         {
-            return _targetMethod.Body.Variables[3];
+            return TargetMethod.Body.Variables[3];
         }
         return (VariableDefinition)inst.Operand;
     }

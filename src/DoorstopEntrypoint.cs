@@ -18,13 +18,15 @@ public static class Entrypoint
 
             // Check for MacOS directory structure
             // that is different from Windows and Linux
-            if (String.IsNullOrEmpty(dataDir)) {
+            if (String.IsNullOrEmpty(dataDir))
+            {
                 string contentsDir = Path.GetDirectoryName(baseDir);
                 dataDir = Path.Combine(contentsDir, "Resources", "Data");
             }
 
             string managedDir = Path.Combine(baseDir, dataDir, "Managed");
-            string asmPath = Path.Combine(managedDir, "Assembly-CSharp.dll");
+            string asmMainPath = Path.Combine(managedDir, "Assembly-CSharp.dll");
+            string asmLocalizationPath = Path.Combine(managedDir, "TeamCherry.Localization.dll");
 
             string modPath = typeof(Entrypoint).Assembly.Location;
             string modDir = Path.GetDirectoryName(modPath)!;
@@ -43,20 +45,22 @@ public static class Entrypoint
                 ReadWrite = false
             };
 
-            AssemblyDefinition silksongAsm = AssemblyDefinition.ReadAssembly(asmPath, readerParams);
-            AssemblyDefinition modAsm = AssemblyDefinition.ReadAssembly(modPath, readerParams);
+            using AssemblyDefinition silksongAsm = AssemblyDefinition.ReadAssembly(asmMainPath, readerParams);
+            using AssemblyDefinition localizationAsm = AssemblyDefinition.ReadAssembly(asmLocalizationPath, readerParams);
+            using AssemblyDefinition modAsm = AssemblyDefinition.ReadAssembly(modPath, readerParams);
 
             ModuleDefinition silksongModule = silksongAsm.MainModule;
+            ModuleDefinition localizationModule = localizationAsm.MainModule;
             ModuleDefinition modModule = modAsm.MainModule;
 
-            PatchesManager manager = new(silksongModule, modModule);
+            PatchesManager manager = new(silksongModule, localizationModule, modModule);
             manager.ApplyPatches();
 
             silksongAsm.Write(Path.Combine(modDir, "Assembly-CSharp.dll"));
-
-            // Cleanup resources
-            silksongAsm.Dispose();
-            modAsm.Dispose();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
         }
     }
 }

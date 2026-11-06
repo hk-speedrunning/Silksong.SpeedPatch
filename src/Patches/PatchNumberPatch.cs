@@ -8,16 +8,17 @@ namespace SilksongDoorstop.Patches;
 
 internal class PatchNumberPatch: Patch
 {
-    private ModuleDefinition _targetModule;
+    private MethodDefinition _targetMethod;
 
-    protected MethodDefinition _targetMethod;
+    private readonly string _shortcodeString;
 
-    public PatchNumberPatch(ModuleDefinition targetModule)
+    public PatchNumberPatch(ModuleDefinition targetModule, PatchesManager.Settings settings)
     {
-        _targetModule = targetModule;
-        TypeDefinition targetType = _targetModule.GetType("SetVersionNumber");
+        var targetType = targetModule.GetType("SetVersionNumber");
 
         _targetMethod = targetType.Methods.First(method => method.Name == "Start");
+
+        _shortcodeString = string.Join(", ", settings.GetShortcodes());
     }
 
     public void ApplyPatch()
@@ -29,6 +30,6 @@ internal class PatchNumberPatch: Patch
             ((string)inst.Operand).StartsWith("1.")
         );
         string oldValue = (string)toReplace.Operand;
-        il.Replace(toReplace, il.Create(OpCodes.Ldstr, oldValue + "-SP"));
+        il.Replace(toReplace, il.Create(OpCodes.Ldstr, oldValue + $"-S{PatchesManager.Version}\n{_shortcodeString}"));
     }
 }

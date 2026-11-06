@@ -15,7 +15,9 @@ internal class CycleNormalizerPatch : Patch
 {
     private ModuleDefinition _targetModule;
 
-    public CycleNormalizerPatch(ModuleDefinition targetModule)
+    private float _delay;
+
+    public CycleNormalizerPatch(ModuleDefinition targetModule, float delay)
     {
         _targetModule = targetModule;
     }
@@ -198,13 +200,13 @@ internal class CycleNormalizerPatch : Patch
         il.MarkLabel(afterReleaseTimeControlLabel);
         il.GotoNext();
 
-        // yield return new WaitForSecondsRealtime(0.06f);
+        // yield return new WaitForSecondsRealtime(DELAY);
         ILLabel afterYieldDelayLabel = il.MarkLabel();
         il.MoveBeforeLabels();
         int afterYieldDelayState = switchTargets.Count;
         switchTargets.Add(afterYieldDelayLabel);
         il.EmitLdarg(0);
-        il.EmitLdcR4(0.06f);
+        il.EmitLdcR4(_delay);
         il.EmitNewobj(_targetModule.ImportReference(typeof(WaitForSecondsRealtime)
             .GetConstructor([typeof(float)])));
         il.EmitStfld(currentField);

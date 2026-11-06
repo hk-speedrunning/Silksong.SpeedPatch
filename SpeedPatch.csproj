@@ -9,9 +9,12 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
     <AssemblyName>HKSR.Speedpatches</AssemblyName>
-    <VersionPrefix>0.2.0</VersionPrefix>
-    <VersionSuffix Condition="'$(Configuration)'=='DEBUG'">beta</VersionSuffix>
+    <VersionPrefix>1.0</VersionPrefix>
+    <VersionSuffix Condition="'$(Configuration)'=='Alpha'">a</VersionSuffix>
+    <VersionSuffix Condition="'$(Configuration)'=='Beta'">b</VersionSuffix>
     <RootNamespace>SilksongDoorstop</RootNamespace>
+    <Configurations>Release;Beta;Alpha</Configurations>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

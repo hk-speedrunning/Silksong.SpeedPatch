@@ -1,24 +1,22 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 namespace SilksongDoorstop.Patches;
 
-internal class CourierFixPatch : CopyPatch
+internal class CourierFixPatch(ModuleDefinition targetModule, ModuleDefinition sourceModule)
+    : CopyPatch(targetModule, sourceModule, "SimpleQuestsShopOwner", "GetItems")
 {
-
-    public CourierFixPatch(ModuleDefinition targetModule, ModuleDefinition sourceModule)
-        : base(targetModule, sourceModule, "SimpleQuestsShopOwner", "GetItems") { }
-
-    override public void ApplyPatch()
+    public override void ApplyPatch()
     {
-        int varCount = _targetMethod.Body.Variables.Count;
+        int varCount = TargetMethod.Body.Variables.Count;
 
 
         int insertIndex = 0;
-        foreach (Instruction inst in _targetMethod.Body.Instructions)
+        foreach (Instruction inst in TargetMethod.Body.Instructions)
         {
             if (inst.OpCode == OpCodes.Call && ((MethodReference)inst.Operand).FullName.Contains("Extensions::Shuffle"))
             {
@@ -30,22 +28,22 @@ internal class CourierFixPatch : CopyPatch
         CopyLocals();
         InsertCode(insertIndex, varCount);
 
-        _targetMethod.Body.GetILProcessor()
-            .Remove(_targetMethod.Body.Instructions.First(inst =>
+        TargetMethod.Body.GetILProcessor()
+            .Remove(TargetMethod.Body.Instructions.First(inst =>
                 inst.OpCode == OpCodes.Ret
             )
         );
 
-        ILProcessor il = _targetMethod.Body.GetILProcessor();
+        ILProcessor il = TargetMethod.Body.GetILProcessor();
 
-        for (int i = 0; i < _sourceMethod.Body.Instructions.Count - 1; i++)
+        for (int i = 0; i < SourceMethod.Body.Instructions.Count - 1; i++)
         {
             Instruction inst = il.Body.Instructions[insertIndex + 1 + i];
             if (inst.OpCode.OperandType == OperandType.InlineField &&
                 ((FieldReference)inst.Operand).Name == "runningGenericList")
             {
-                FieldDefinition runningGenericField = _targetModule.GetType("SimpleQuestsShopOwner").Fields.First(field => field.Name == "runningGenericList");
-                il.Replace(inst, il.Create(inst.OpCode, _targetModule.ImportReference(runningGenericField)));
+                FieldDefinition runningGenericField = TargetModule.GetType("SimpleQuestsShopOwner").Fields.First(field => field.Name == "runningGenericList");
+                il.Replace(inst, il.Create(inst.OpCode, TargetModule.ImportReference(runningGenericField)));
             }
         }
     }
@@ -74,11 +72,12 @@ internal class CourierFixPatch : CopyPatch
  * SOFTWARE.
  */
 
+[SuppressMessage("ReSharper", "InconsistentNaming")]
 internal class SimpleQuestsShopOwner : global::SimpleQuestsShopOwner
 {
-    private List<ShopItemInfo> runningGenericList = new();
+    private new List<ShopItemInfo> runningGenericList = new();
 
-    new private void GetItems()
+    private new void GetItems()
     {
         List<ShopItemInfo> completed = new();
         List<ShopItemInfo> notCompleted = new();

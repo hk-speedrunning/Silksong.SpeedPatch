@@ -10,7 +10,7 @@ internal class UndeadnameJasminePatch : Patch
 {
     private ModuleDefinition _targetModule;
 
-    protected MethodDefinition _targetMethod;
+    private MethodDefinition _targetMethod;
 
     public UndeadnameJasminePatch(ModuleDefinition targetModule)
     {

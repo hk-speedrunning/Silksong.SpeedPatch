@@ -15,34 +15,19 @@ internal class OnGUIPatch : CopyPatch
     public OnGUIPatch(ModuleDefinition targetModule, ModuleDefinition sourceModule, PatchesManager.Settings settings)
         : base(targetModule, sourceModule, "GameManager", "OnGUI")
     {
-        _warningText = $"SpeedPatch v{PatchesManager.Version!}\n"
-            + "UndeadnameJasminePatch\n";
+        _warningText = $"SpeedPatch v{PatchesManager.Version!}\n";
+
+        _warningText += string.Join(", ", settings.GetShortcodes());
         
-        foreach (FieldInfo field in settings.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public))
-        {
-            bool activated = (bool)field.GetValue(settings);
-            if (activated)
-            {
-                switch (field.Name)
-                {
-                    case "DowndashTransitionFix":
-                        _warningText += "DowndashTransitionFix";
-                        break;
-                    case "CourierRNGFix":
-                        _warningText += "CourierRNGFix";
-                        break;
-                    case "CycleNormalizer":
-                        _warningText += "CycleNormalizer";
-                        break;
-                }
-                _warningText += '\n';
-            }
-        }
+        // if (settings.DowndashTransitionFix) _warningText += "DowndashTransitionFix\n";
+        // if (settings.CourierRNGFix) _warningText += "CourierRNGFix\n";
+        // if (settings.CycleNormalizer) _warningText += "CycleNormalizer\n";
+        
     }
 
-    override public void ApplyPatch()
+    public override void ApplyPatch()
     {
-        ILProcessor il = _targetMethod.Body.GetILProcessor();
+        ILProcessor il = TargetMethod.Body.GetILProcessor();
         il.Clear();
 
         base.ApplyPatch();
