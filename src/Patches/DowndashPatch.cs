@@ -10,7 +10,7 @@ internal class DowndashPatch : Patch
 {
     private ModuleDefinition _targetModule;
 
-    protected MethodDefinition _targetMethod;
+    private MethodDefinition _targetMethod;
 
     public DowndashPatch(ModuleDefinition targetModule)
     {
