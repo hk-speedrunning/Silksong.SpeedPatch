@@ -17,6 +17,7 @@ internal class PatchesManager
     {
         public bool DowndashTransitionFix = false;
         public bool CourierRNGFix = false;
+        public bool CycleNormalizer = false;
     }
 
     private Settings _settings = new();
@@ -27,10 +28,10 @@ internal class PatchesManager
     {
         Version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()
             .InformationalVersion.Split('+')[0];
-        
+
         string modDir = Path.GetDirectoryName(_sourceModule.FileName);
         string configPath = Path.Combine(modDir, "hksr_patches.json");
-        try 
+        try
         {
             if (!File.Exists(configPath))
             {
@@ -71,12 +72,17 @@ internal class PatchesManager
         {
             _patches.Add(new CourierFixPatch(_targetMainModule, _sourceModule));
         }
+        if (_settings.CycleNormalizer)
+        {
+            _patches.Add(new CycleNormalizerPatch(_targetModule));
+        }
     }
 
     public void ApplyPatches()
     {
         foreach (Patch patch in _patches)
         {
+            Console.WriteLine($"Applying patch: {patch.GetType().Name}");
             patch.ApplyPatch();
         }
     }

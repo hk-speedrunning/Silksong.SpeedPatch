@@ -10,6 +10,7 @@ WARNING: this patch is in preview; until this notice is removed, runs submitted 
 
 - CourierRNGFix is permitted for use in NMG & glitched runs.
 - DowndashTransitionFix is permitted for use in glitched runs only.
+- CycleNormalizer is permitted in all categories.
 
 ## Usage
 
