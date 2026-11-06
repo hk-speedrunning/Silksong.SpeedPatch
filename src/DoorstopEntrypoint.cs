@@ -18,9 +18,8 @@ public static class Entrypoint
 
             // Check for MacOS directory structure
             // that is different from Windows and Linux
-            if (String.IsNullOrEmpty(dataDir))
-            {
-                string contentsDir = Path.GetDirectoryName(baseDir)!;
+            if (String.IsNullOrEmpty(dataDir)) {
+                string contentsDir = Path.GetDirectoryName(baseDir);
                 dataDir = Path.Combine(contentsDir, "Resources", "Data");
             }
 
@@ -44,8 +43,8 @@ public static class Entrypoint
                 ReadWrite = false
             };
 
-            using AssemblyDefinition silksongAsm = AssemblyDefinition.ReadAssembly(asmPath, readerParams);
-            using AssemblyDefinition modAsm = AssemblyDefinition.ReadAssembly(modPath, readerParams);
+            AssemblyDefinition silksongAsm = AssemblyDefinition.ReadAssembly(asmPath, readerParams);
+            AssemblyDefinition modAsm = AssemblyDefinition.ReadAssembly(modPath, readerParams);
 
             ModuleDefinition silksongModule = silksongAsm.MainModule;
             ModuleDefinition modModule = modAsm.MainModule;
@@ -53,12 +52,11 @@ public static class Entrypoint
             PatchesManager manager = new(silksongModule, modModule);
             manager.ApplyPatches();
 
-            silksongAsm.Write(Path.Combine(outputPath));
-            Console.WriteLine("Finished writing assembly");
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
+            silksongAsm.Write(Path.Combine(modDir, "Assembly-CSharp.dll"));
+
+            // Cleanup resources
+            silksongAsm.Dispose();
+            modAsm.Dispose();
         }
     }
 }
