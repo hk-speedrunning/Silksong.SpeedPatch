@@ -15,7 +15,8 @@ internal class OnGUIPatch : CopyPatch
     public OnGUIPatch(ModuleDefinition targetModule, ModuleDefinition sourceModule, PatchesManager.Settings settings)
         : base(targetModule, sourceModule, "GameManager", "OnGUI")
     {
-        _warningText = $"SpeedPatch v{PatchesManager.Version!}\n";
+        _warningText = $"SpeedPatch v{PatchesManager.Version!}\n"
+            + "UndeadnameJasminePatch\n";
         
         foreach (FieldInfo field in settings.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public))
         {
