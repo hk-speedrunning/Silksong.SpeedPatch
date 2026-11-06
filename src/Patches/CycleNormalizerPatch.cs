@@ -20,6 +20,7 @@ internal class CycleNormalizerPatch : Patch
     public CycleNormalizerPatch(ModuleDefinition targetModule, float delay)
     {
         _targetModule = targetModule;
+        _delay = delay;
     }
 
     public void ApplyPatch()
